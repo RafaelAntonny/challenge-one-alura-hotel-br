@@ -16,6 +16,7 @@ import java.awt.event.ActionEvent;
 import java.awt.Toolkit;
 import javax.swing.SwingConstants;
 import java.awt.event.MouseMotionAdapter;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.awt.SystemColor;
@@ -93,7 +94,12 @@ public class MenuUsuario extends JFrame {
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				Buscar buscar = new Buscar();
+				Buscar buscar;
+				try {
+					buscar = new Buscar();
+				} catch (SQLException e1) {
+					throw new RuntimeException(e1);
+				}
 				buscar.setVisible(true);
 				dispose();
 			}
@@ -130,7 +136,12 @@ public class MenuUsuario extends JFrame {
 			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				ReservasView reservas = new ReservasView();
+				ReservasView reservas;
+				try {
+					reservas = new ReservasView();
+				} catch (SQLException e1) {
+					throw new RuntimeException(e1);
+				}
 				reservas.setVisible(true);
 				dispose();
 			}

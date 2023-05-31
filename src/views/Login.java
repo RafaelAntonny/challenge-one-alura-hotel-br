@@ -17,6 +17,7 @@ import javax.swing.SwingConstants;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.Set;
 
 public class Login extends JFrame {
 
@@ -234,13 +235,17 @@ public class Login extends JFrame {
 		header.setLayout(null);
 	}
 	
+	public static final Set<String> UsuariosPadrao = Set.of(
+			"usuario", "admin");
+	public static final Set<String> SenhasPadrao = Set.of(
+			"senha", "admin");
+	
 	private void Login() {
-		 String Usuario= "admin";
-	     String Senha="admin";
-
+			
+	        String usuarioo = txtUsuario.getText();
 	        String senhaa=new String (txtSenha.getPassword());
 
-	        if(txtUsuario.getText().equals(Usuario) && senhaa.equals(Senha)){
+	        if(UsuariosPadrao.contains(usuarioo) && SenhasPadrao.contains(senhaa)){
 	            MenuUsuario menu = new MenuUsuario();
 	            menu.setVisible(true);
 	            dispose();	 

@@ -11,15 +11,20 @@ import javax.swing.ImageIcon;
 import java.awt.Color;
 import javax.swing.JTextField;
 import com.toedter.calendar.JDateChooser;
+
+import controller.ReservaController;
+import model.Reserva;
+
 import java.awt.Font;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
-import java.text.Format;
+import java.util.Calendar;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.Toolkit;
 import java.beans.PropertyChangeListener;
+import java.sql.SQLException;
 import java.beans.PropertyChangeEvent;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
@@ -38,6 +43,7 @@ public class ReservasView extends JFrame {
 	private JLabel labelExit;
 	private JLabel lblValorSimbolo; 
 	private JLabel labelAtras;
+	private ReservaController reservaController;
 
 	/**
 	 * Launch the application.
@@ -57,9 +63,12 @@ public class ReservasView extends JFrame {
 
 	/**
 	 * Create the frame.
+	 * @throws SQLException 
 	 */
-	public ReservasView() {
+	public ReservasView() throws SQLException {
+	
 		super("Reserva");
+		reservaController = new ReservaController();
 		setIconImage(Toolkit.getDefaultToolkit().getImage(ReservasView.class.getResource("/imagenes/aH-40px.png")));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 910, 560);
@@ -141,7 +150,7 @@ public class ReservasView extends JFrame {
 		txtDataS.setFont(new Font("Roboto", Font.PLAIN, 18));
 		txtDataS.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				//Ativa o evento, após o usuário selecionar as datas, o valor da reserva deve ser calculado
+				calcularValor(txtDataE, txtDataS);
 			}
 		});
 		txtDataS.setDateFormatString("yyyy-MM-dd");
@@ -295,9 +304,12 @@ public class ReservasView extends JFrame {
 		btnProximo.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (ReservasView.txtDataE.getDate() != null && ReservasView.txtDataS.getDate() != null) {		
-					RegistroHospede registro = new RegistroHospede();
-					registro.setVisible(true);
+				if (ReservasView.txtDataE.getDate() != null && ReservasView.txtDataS.getDate() != null) {
+					try {
+						registro();
+					} catch (SQLException e1) {
+						throw new RuntimeException(e1);
+					}
 				} else {
 					JOptionPane.showMessageDialog(null, "Deve preencher todos os campos.");
 				}
@@ -315,6 +327,36 @@ public class ReservasView extends JFrame {
 		lblSeguinte.setFont(new Font("Roboto", Font.PLAIN, 18));
 		lblSeguinte.setBounds(0, 0, 122, 35);
 		btnProximo.add(lblSeguinte);
+	}
+	
+	private void registro() throws SQLException {
+		String dataEntrada = ((JTextField)txtDataE.getDateEditor().getUiComponent()).getText();
+		String dataSaida = ((JTextField)txtDataS.getDateEditor().getUiComponent()).getText();
+		Reserva novaReserva = new Reserva(java.sql.Date.valueOf(dataEntrada), java.sql.Date.valueOf(dataSaida), txtValor.getText(), txtFormaPagamento.getSelectedItem().toString());
+		reservaController.salvar(novaReserva);
+		
+		JOptionPane.showMessageDialog(contentPane, "Registro salvo, Número de reserva " + Integer.toString(novaReserva.getId()));
+		RegistroHospede registroHospede = new RegistroHospede(novaReserva.getId());
+		registroHospede.setVisible(true);
+		dispose();
+	}
+	
+	private void calcularValor(JDateChooser dataEntrada, JDateChooser dataSaida) {
+		if(dataEntrada.getDate() != null && dataSaida.getDate() != null) {
+			Calendar inicio = dataEntrada.getCalendar();
+			Calendar fim = dataSaida.getCalendar();
+			int diaria = 22;
+			int dias = -1;
+			int valor;
+			
+			while(inicio.before(fim)||inicio.equals(fim)) {
+				dias++;
+				inicio.add(Calendar.DATE, 1);
+			}
+			
+			valor = dias * diaria;
+			txtValor.setText("" + valor);
+		}
 	}
 
 	//Código que permite movimentar a janela pela tela seguindo a posição de "x" e "y"	
